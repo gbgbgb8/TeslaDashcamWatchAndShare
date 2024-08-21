@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla Dashcam Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        video {
+            width: 100%;
+            height: auto;
+        }
+        #fileList {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #exportButton {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tesla Dashcam Viewer</h1>
+    <button id="selectFolder">Select Folder</button>
+    <div id="fileList"></div>
+    <input type="datetime-local" id="dateTimePicker">
+    <button onclick="loadVideos()">Load Videos</button>
+    <div class="video-container">
+        <video id="frontVideo" controls></video>
+        <video id="backVideo" controls></video>
+        <video id="leftVideo" controls></video>
+        <video id="rightVideo" controls></video>
+    </div>
+    <button id="exportButton" onclick="combineAndExport()">Combine and Export</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.js/0.10.1/ffmpeg.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
