@@ -58,49 +58,52 @@ async function loadVideos() {
 let ffmpeg;
 
 async function initFFmpeg() {
-    ffmpeg = createFFmpeg({ log: true });
-    await ffmpeg.load();
+    if (!ffmpeg) {
+        ffmpeg = FFmpeg.createFFmpeg({ log: true });
+        await ffmpeg.load();
+    }
 }
 
-// Call this function when the page loads
-initFFmpeg();
+// We'll call initFFmpeg when it's needed, not on page load
 
 async function combineAndExport() {
-    if (!ffmpeg) {
-        alert('FFmpeg is not initialized. Please try again in a moment.');
-        return;
-    }
+    try {
+        await initFFmpeg();
 
-    const videos = document.querySelectorAll('video');
-    const streams = [];
+        const videos = document.querySelectorAll('video');
+        const streams = [];
 
-    for (const video of videos) {
-        if (video.src) {
-            const response = await fetch(video.src);
-            const blob = await response.blob();
-            streams.push(blob);
+        for (const video of videos) {
+            if (video.src) {
+                const response = await fetch(video.src);
+                const blob = await response.blob();
+                streams.push(blob);
+            }
         }
+
+        if (streams.length === 0) {
+            alert('No videos loaded to combine.');
+            return;
+        }
+
+        for (let i = 0; i < streams.length; i++) {
+            ffmpeg.FS('writeFile', `input${i}.mp4`, await FFmpeg.fetchFile(streams[i]));
+        }
+
+        await ffmpeg.run('-i', 'input0.mp4', '-i', 'input1.mp4', '-i', 'input2.mp4', '-i', 'input3.mp4', 
+                         '-filter_complex', '[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]', 
+                         '-map', '[v]', 'output.mp4');
+
+        const data = ffmpeg.FS('readFile', 'output.mp4');
+        const combinedVideo = new Blob([data.buffer], { type: 'video/mp4' });
+        const url = URL.createObjectURL(combinedVideo);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'combined_dashcam.mp4';
+        a.click();
+    } catch (error) {
+        console.error('Error in combineAndExport:', error);
+        alert('An error occurred while combining and exporting the videos. Please check the console for details.');
     }
-
-    if (streams.length === 0) {
-        alert('No videos loaded to combine.');
-        return;
-    }
-
-    for (let i = 0; i < streams.length; i++) {
-        ffmpeg.FS('writeFile', `input${i}.mp4`, await fetchFile(streams[i]));
-    }
-
-    await ffmpeg.run('-i', 'input0.mp4', '-i', 'input1.mp4', '-i', 'input2.mp4', '-i', 'input3.mp4', 
-                     '-filter_complex', '[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]', 
-                     '-map', '[v]', 'output.mp4');
-
-    const data = ffmpeg.FS('readFile', 'output.mp4');
-    const combinedVideo = new Blob([data.buffer], { type: 'video/mp4' });
-    const url = URL.createObjectURL(combinedVideo);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'combined_dashcam.mp4';
-    a.click();
 }
