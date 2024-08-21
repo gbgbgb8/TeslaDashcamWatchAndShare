@@ -55,7 +55,22 @@ async function loadVideos() {
     }
 }
 
+let ffmpeg;
+
+async function initFFmpeg() {
+    ffmpeg = createFFmpeg({ log: true });
+    await ffmpeg.load();
+}
+
+// Call this function when the page loads
+initFFmpeg();
+
 async function combineAndExport() {
+    if (!ffmpeg) {
+        alert('FFmpeg is not initialized. Please try again in a moment.');
+        return;
+    }
+
     const videos = document.querySelectorAll('video');
     const streams = [];
 
@@ -71,9 +86,6 @@ async function combineAndExport() {
         alert('No videos loaded to combine.');
         return;
     }
-
-    const ffmpeg = createFFmpeg({ log: true });
-    await ffmpeg.load();
 
     for (let i = 0; i < streams.length; i++) {
         ffmpeg.FS('writeFile', `input${i}.mp4`, await fetchFile(streams[i]));
