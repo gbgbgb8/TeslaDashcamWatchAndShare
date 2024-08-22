@@ -79,16 +79,21 @@ async function loadVideos() {
 
 async function initFFmpeg() {
     if (!ffmpeg) {
-        ffmpeg = new FFmpeg();
-        ffmpeg.on('log', ({ message }) => {
-            document.getElementById('ffmpegMessage').innerHTML = message;
-            console.log(message);
-        });
-        const baseURL = '/ffmpeg'; // Assuming you'll put ffmpeg files in a folder named 'ffmpeg' in your public directory
-        await ffmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        });
+        try {
+            ffmpeg = new FFmpeg();
+            ffmpeg.on('log', ({ message }) => {
+                document.getElementById('ffmpegMessage').innerHTML = message;
+                console.log(message);
+            });
+            const baseURL = '/ffmpeg';
+            await ffmpeg.load({
+                coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+            });
+        } catch (error) {
+            console.error('Error initializing FFmpeg:', error);
+            alert('Failed to initialize FFmpeg. Please check the console for details.');
+        }
     }
 }
 
