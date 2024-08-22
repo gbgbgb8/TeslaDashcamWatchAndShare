@@ -6,16 +6,17 @@ let videoFiles = [];
 let dateTimes = new Set();
 let ffmpeg;
 
-document.getElementById('selectFolder').addEventListener('click', async () => {
+if (typeof window !== 'undefined') {
+  document.getElementById('selectFolder').addEventListener('click', async () => {
     try {
         selectedFolder = await window.showDirectoryPicker();
         await listFiles(selectedFolder);
     } catch (err) {
         console.error('Error selecting folder:', err);
     }
-});
+  });
 
-async function listFiles(folder) {
+  async function listFiles(folder) {
     videoFiles = [];
     dateTimes.clear();
     const fileList = document.getElementById('fileList');
@@ -45,9 +46,9 @@ async function listFiles(folder) {
         option.textContent = dateTime.replace('_', ' ').replace(/-/g, ':');
         dateSelector.appendChild(option);
     });
-}
+  }
 
-async function loadVideos() {
+  async function loadVideos() {
     if (!selectedFolder) {
         alert('Please select a folder first.');
         return;
@@ -75,9 +76,9 @@ async function loadVideos() {
             video.src = '';
         }
     }
-}
+  }
 
-async function initFFmpeg() {
+  async function initFFmpeg() {
     if (!ffmpeg) {
         try {
             ffmpeg = new FFmpeg();
@@ -95,9 +96,9 @@ async function initFFmpeg() {
             alert('Failed to initialize FFmpeg. Please check the console for details.');
         }
     }
-}
+  }
 
-async function combineAndExport() {
+  async function combineAndExport() {
     try {
         await initFFmpeg();
 
@@ -139,7 +140,13 @@ async function combineAndExport() {
         console.error('Error in combineAndExport:', error);
         alert('An error occurred while combining and exporting the videos. Please check the console for details.');
     }
-}
+  }
 
-// Initialize FFmpeg when the page loads
-initFFmpeg();
+  // Initialize FFmpeg when the page loads
+  initFFmpeg();
+
+  // Add error boundary
+  window.addEventListener('error', function(event) {
+    console.error('Uncaught error:', event.error);
+  });
+}
