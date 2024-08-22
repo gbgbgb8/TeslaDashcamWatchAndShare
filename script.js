@@ -1,5 +1,6 @@
 let selectedFolder;
 let videoFiles = [];
+let dateTimes = new Set();
 
 document.getElementById('selectFolder').addEventListener('click', async () => {
     try {
@@ -12,8 +13,11 @@ document.getElementById('selectFolder').addEventListener('click', async () => {
 
 async function listFiles(folder) {
     videoFiles = [];
+    dateTimes.clear();
     const fileList = document.getElementById('fileList');
+    const dateSelector = document.getElementById('dateSelector');
     fileList.innerHTML = '';
+    dateSelector.innerHTML = '<option value="">Select a date and time</option>';
 
     for await (const entry of folder.values()) {
         if (entry.kind === 'file' && entry.name.endsWith('.mp4')) {
@@ -21,8 +25,22 @@ async function listFiles(folder) {
             const li = document.createElement('li');
             li.textContent = entry.name;
             fileList.appendChild(li);
+
+            // Extract date and time from filename
+            const match = entry.name.match(/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})/);
+            if (match) {
+                dateTimes.add(match[1]);
+            }
         }
     }
+
+    // Populate date selector
+    Array.from(dateTimes).sort().forEach(dateTime => {
+        const option = document.createElement('option');
+        option.value = dateTime;
+        option.textContent = dateTime.replace('_', ' ').replace(/-/g, ':');
+        dateSelector.appendChild(option);
+    });
 }
 
 async function loadVideos() {
@@ -31,7 +49,7 @@ async function loadVideos() {
         return;
     }
 
-    const dateTime = document.getElementById('dateTimePicker').value;
+    const dateTime = document.getElementById('dateSelector').value;
     if (!dateTime) {
         alert('Please select a date and time.');
         return;

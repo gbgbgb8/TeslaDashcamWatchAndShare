@@ -28,13 +28,17 @@
         #exportButton {
             margin-top: 20px;
         }
+        #dateSelector {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Tesla Dashcam Viewer</h1>
     <button id="selectFolder">Select Folder</button>
     <div id="fileList"></div>
-    <input type="datetime-local" id="dateTimePicker">
+    <select id="dateSelector"></select>
     <button onclick="loadVideos()">Load Videos</button>
     <div class="video-container">
         <video id="frontVideo" controls></video>
