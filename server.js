@@ -4,7 +4,7 @@ const path = require('path');
 
 const server = http.createServer((req, res) => {
   let filePath = '.' + req.url;
-  if (filePath === './') {
+  if (filePath === './' || filePath === '.') {
     filePath = './index.html';
   }
 
@@ -22,8 +22,16 @@ const server = http.createServer((req, res) => {
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
-        res.writeHead(404);
-        res.end('File not found');
+        // If the file is not found, serve index.html
+        fs.readFile('./index.html', (err, content) => {
+          if (err) {
+            res.writeHead(500);
+            res.end('Server error: ' + err.code);
+          } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(content, 'utf-8');
+          }
+        });
       } else {
         res.writeHead(500);
         res.end('Server error: ' + error.code);
@@ -39,7 +47,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
 });
